@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: sig-desktop-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --run-syncdb
+    startCommand: gunicorn sig_dektop.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 300 --log-level info
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DB_HOST
+        sync: false   # lo pones manualmente en el dashboard
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+    healthCheckPath: /api/

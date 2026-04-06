@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "cambia-esto-en-produccion")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".onrender.com", "*"]
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # <-- DEBE IR PRIMERO
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # static files en producción
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,18 +79,23 @@ TEMPLATES = [
 WSGI_APPLICATION = "sig_dektop.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# Database — Django usa SQLite solo para sus tablas internas (sesiones, admin).
+# Todas las operaciones reales contra MySQL se hacen con mysql.connector directamente
+# a través de MYSQL_DB (ver views.py → _get_conn()).
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
-        "PORT": os.environ.get("DB_PORT"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
+}
+
+# Conexión directa a MySQL (usada en views.py via mysql.connector)
+MYSQL_DB = {
+    "HOST":     os.environ.get("DB_HOST", "127.0.0.1"),
+    "PORT":     os.environ.get("DB_PORT", "3306"),
+    "USER":     os.environ.get("DB_USER", ""),
+    "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+    "NAME":     os.environ.get("DB_NAME", ""),
 }
 
 
@@ -129,6 +135,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "*"]
