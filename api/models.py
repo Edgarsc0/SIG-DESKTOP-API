@@ -513,3 +513,24 @@ class PlantillaFinBackup20251231124825(models.Model):
     class Meta:
         managed = False
         db_table = 'plantilla_fin_backup_20251231_124825'
+
+
+class HistorialPos(models.Model):
+    no_posicion_actual = models.CharField(db_column='Nº Posición Actual', max_length=255, blank=True, null=True)
+    no_empleado = models.CharField(db_column='NO_EMPLEADO', max_length=255, blank=True, null=True)
+    nombre_empleado = models.CharField(db_column='NOMBRE EMPLEADO', max_length=255, blank=True, null=True)
+    fecha_entrada_pos = models.CharField(db_column='FECHA ENTRADA POS', max_length=255, blank=True, null=True)
+    fecha_fin_pos = models.CharField(db_column='FECHA FIN POS', max_length=255, blank=True, null=True)
+    motivo_salida = models.CharField(db_column='MOTIVO SALIDA', max_length=255, blank=True, null=True)
+    f_entrada_salario_base = models.CharField(db_column='F ENTRADA SALARIO BASE', max_length=255, blank=True, null=True)
+    f_entrada_plan_sal = models.CharField(db_column='F ENTRADA PLAN SAL', max_length=255, blank=True, null=True)
+    f_entrada_grado = models.CharField(db_column='F ENTRADA GRADO', max_length=255, blank=True, null=True)
+    f_entrada_escala = models.CharField(db_column='F ENTRADA ESCALA', max_length=255, blank=True, null=True)
+    f_fin_salario_base = models.CharField(db_column='F FIN SALARIO BASE', max_length=255, blank=True, null=True)
+    f_fin_plan_sal = models.CharField(db_column='F FIN PLAN SAL', max_length=255, blank=True, null=True)
+    f_fin_grado = models.CharField(db_column='F FIN GRADO', max_length=255, blank=True, null=True)
+    f_fin_escala = models.CharField(db_column='F FIN ESCALA', max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'HISTORIAL_POS'

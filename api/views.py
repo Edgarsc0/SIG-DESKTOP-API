@@ -658,7 +658,7 @@ def deduplicar_tabla(request):
 
 
 # ─── ENDPOINT: truncar tabla ─────────────────────────────────────────────────
-TABLAS_PERMITIDAS = {"domicilios", "FAMILIAR", "MOV_POS", "MOV_TOTAL"}
+TABLAS_PERMITIDAS = {"domicilios", "FAMILIAR", "MOV_POS", "MOV_TOTAL", "HISTORIAL_POS"}
 
 
 @api_view(["POST"])
@@ -1369,3 +1369,88 @@ def cancelar_descarga(request):
         except Exception:
             pass
     return Response({"ok": True})
+
+
+# ─── ENDPOINT: insertar historial de posición ────────────────────────────────
+_COLS_HISTORIAL_POS = [
+    'Nº Posición Actual',
+    'NO_EMPLEADO',
+    'NOMBRE EMPLEADO',
+    'FECHA ENTRADA POS',
+    'FECHA FIN POS',
+    'MOTIVO SALIDA',
+    'F ENTRADA SALARIO BASE',
+    'F ENTRADA PLAN SAL',
+    'F ENTRADA GRADO',
+    'F ENTRADA ESCALA',
+    'F FIN SALARIO BASE',
+    'F FIN PLAN SAL',
+    'F FIN GRADO',
+    'F FIN ESCALA',
+]
+
+_KEY_MAP_HISTORIAL_POS = {
+    'Nº Posición Actual': 'no_pos',
+    'NO_EMPLEADO': 'no_empleado',
+    'NOMBRE EMPLEADO': 'nombre_empleado',
+    'FECHA ENTRADA POS': 'fecha_entrada',
+    'FECHA FIN POS': 'fecha_fin',
+    'MOTIVO SALIDA': 'motivo_salida',
+    'F ENTRADA SALARIO BASE': 'salario_entrada',
+    'F ENTRADA PLAN SAL': 'f_entrada_plan_sal',
+    'F ENTRADA GRADO': 'grado_entrada',
+    'F ENTRADA ESCALA': 'escala_entrada',
+    'F FIN SALARIO BASE': 'salario_fin',
+    'F FIN PLAN SAL': 'f_fin_plan_sal',
+    'F FIN GRADO': 'grado_fin',
+    'F FIN ESCALA': 'escala_fin',
+}
+
+
+@api_view(["POST"])
+def insertar_historial_pos(request):
+    """
+    POST /api/insertar-historial-pos/
+    Body JSON: { "rows": [...] }  — bulk insert
+    """
+    rows = request.data.get("rows", [])
+    if not rows:
+        return Response({"ok": False, "error": "rows vacío"}, status=status.HTTP_400_BAD_REQUEST)
+
+    cols = ', '.join(f'`{c}`' for c in _COLS_HISTORIAL_POS)
+    placeholders = ', '.join(['%s'] * len(_COLS_HISTORIAL_POS))
+    sql = f"INSERT INTO HISTORIAL_POS ({cols}) VALUES ({placeholders})"
+    params = [
+        tuple(row.get(_KEY_MAP_HISTORIAL_POS[c]) or None for c in _COLS_HISTORIAL_POS)
+        for row in rows
+    ]
+
+    conn = _get_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.executemany(sql, params)
+        conn.commit()
+        return Response({"ok": True, "insertadas": len(rows)}, status=status.HTTP_200_OK)
+    except mysql.connector.Error as err:
+        return Response({"ok": False, "error": str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ─── ENDPOINT: obtener posiciones distintas de MOV_POS ───────────────────────
+@api_view(["GET"])
+def posiciones_mov_pos(request):
+    """GET /api/posiciones-mov-pos/ — devuelve lista de Nº Pos Actual distintas"""
+    conn = _get_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT DISTINCT(`Nº Pos Actual`) FROM MOV_POS WHERE `Nº Pos Actual` IS NOT NULL AND `Nº Pos Actual` != ''")
+        rows = cursor.fetchall()
+        posiciones = [r[0] for r in rows]
+        return Response({"ok": True, "posiciones": posiciones}, status=status.HTTP_200_OK)
+    except mysql.connector.Error as err:
+        return Response({"ok": False, "error": str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    finally:
+        cursor.close()
+        conn.close()

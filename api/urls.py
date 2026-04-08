@@ -21,4 +21,6 @@ urlpatterns = [
     path("ejecutar-descarga/", views.ejecutar_descarga),
     path("obtener-archivo/<str:session_id>/<path:nombre>/", views.obtener_archivo),
     path("cancelar-descarga/", views.cancelar_descarga),
+    path("insertar-historial-pos/", views.insertar_historial_pos),
+    path("posiciones-mov-pos/", views.posiciones_mov_pos),
 ]
