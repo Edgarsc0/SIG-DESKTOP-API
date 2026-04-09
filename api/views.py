@@ -762,7 +762,7 @@ _COLS_MOV_TOTAL = [
     "RFC",
     "CURP",
     "Id Persona",
-    "Descr Larga 1",
+    "Descr Larga1",
     "Niv# Jerarquico",
     "Descr Larga1",
     "Género",
